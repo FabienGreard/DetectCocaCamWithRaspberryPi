@@ -7,29 +7,25 @@ from picamera import PiCamera
 
 class PiCam:
     def __init__(self):
+        print('INIT CAMERA')
         # Define the camera resolution and capture
-        camera = PiCamera(resolution=(640, 480), framerate=30)
-        rawCapture = PiRGBArray(camera, size=(640, 480))
-        # Define the codec and create VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter('output.avi',fourcc, 20.0, (640,480))
-    def start(self):
-        for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-            img = frame.array
-            cv2.flip(img, 0)
-            out.write(img)
+        self.camera = PiCamera(resolution=(640, 480), framerate=30)
+        self.rawCapture = PiRGBArray(self.camera, size=(640, 480))
 
+    def start(self):
+        for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
+            img = frame.array
             cv2.imshow('Frame', img)
             key = cv2.waitKey(1) & 0xFF
-            rawCapture.truncate(0)
+            self.rawCapture.truncate(0)
             if key == ord('q'):
-                stop()
+                self.stop()
+                break
     def stop(self):
-        print('DONE')
-        out.release()
+        print('STOP CAMERA')
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    PiCam = Picam()
-    Picam.start
+    piCam = PiCam()
+    piCam.start()
     system("pause")
