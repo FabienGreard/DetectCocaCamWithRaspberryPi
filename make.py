@@ -1,6 +1,6 @@
 from os import system
 
-from robot.robot import *
+from robot import robot
 from factory import robocorp
 
 class Make:
@@ -9,4 +9,5 @@ class Make:
 
 
 if __name__ == "__main__":
-    system("pause");
+    Make()
+    system("pause")
