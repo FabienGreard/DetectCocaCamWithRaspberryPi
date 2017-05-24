@@ -27,10 +27,10 @@ class Robot(object):
         print(' %s' % (value), 'from' , subject.__class__.__name__)
         if(value == 'on'):
             self.magnet.on()
-            #self.servo.move() i don't know the value
+            self.servo.move(180)
         else:
             self.magnet.off()
-            #self.servo.move() i don't know the value
+            self.servo.move(10) 
 
 
     def addMotor(self, pin1, pin2, position):
