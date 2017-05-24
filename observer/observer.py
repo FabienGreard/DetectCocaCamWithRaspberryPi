@@ -11,7 +11,7 @@ class Robot(object):
     def notify(self, old, new, subject):
         print('foo changed from %s to %s' % (old, new), 'from' , subject.__class__.__name__)
 
-class Observable(object):
+class Observer(object):
     #test observable !!must be move to engine and sight!!
     def __init__(self, value):
         self.value = value
