@@ -23,8 +23,15 @@ class Robot(object):
         self.subject = subject
         self.subject.addObserver(self)
 
-    def notify(self, old, new, subject):
-        print('foo changed from %s to %s' % (old, new), 'from' , subject.__class__.__name__)
+    def notify(self, value, subject):
+        print(' %s' % (value), 'from' , subject.__class__.__name__)
+        if(value == 'on'):
+            self.magnet.on()
+            #self.servo.move() i don't know the value
+        else:
+            self.magnet.off()
+            #self.servo.move() i don't know the value
+
 
     def addMotor(self, pin1, pin2, position):
         self.motors.append(Motor(self.board, pin1, pin2, position))
@@ -42,7 +49,7 @@ class Robot(object):
             print ("Motor : " + str(m.pin1) + " --- " + str(m.pin2) + " --- direction :" + direction)
             for i in range (0,50):
                 if direction == "forward" : m.forward()
-                elif direction == "bacward" : m.backward()
+                elif direction == "backward" : m.backward()
                 elif direction == "left" : m.left()
                 elif direction == "rigth" : m.rigth()
                 elif direction == "stop" : m.stop()
@@ -57,8 +64,6 @@ class PiCam:
     def __init__(self):
         print('INIT CAMERA')
         # Define the camera resolution and capture
-        self.observers = weakref.WeakKeyDictionary()
-
         self.camera = PiCamera(resolution=(640, 480), framerate=30)
         self.rawCapture = PiRGBArray(self.camera, size=(640, 480))
 
@@ -69,14 +74,9 @@ class PiCam:
         print('START CAMERA')
         for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
             # img to gray
-            self.old = frame.array
             self.detect.toGray(frame.array)
-            self.new = self.detect.detectImg()
 
-            cv2.imshow('Frame-Detect', self.new)
-
-            if(self.new != self.old):
-                notifyObservers(old, new)
+            cv2.imshow('Frame-Detect', self.detect.detectImg())
 
             key = cv2.waitKey(1) & 0xFF
             self.rawCapture.truncate(0)
@@ -89,15 +89,42 @@ class PiCam:
         cv2.destroyAllWindows()
         os._exit(0)
 
+class detectObject(object):
+    def __init__(self):
+        #init object xml
+        #self.object = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+        self.object = cv2.CascadeClassifier('coke.xml')
+        self.observers = weakref.WeakKeyDictionary()
+
+    def toGray(self, img):
+        #init gray filter
+        self.img = img
+        self.gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    def detectImg(self):
+        #find objects
+        # face test : objects = self.object.detectMultiScale(self.gray, 1.3, 5)
+        old = self.img
+        objects = self.object.detectMultiScale(self.gray, 1.3, 5)
+        for (x,y,w,h) in objects:
+            #cv2.putText(self.img,'Coca',(x-w,y-h), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (11,255,255), 2, cv2.LINE_AA)
+            cv2.rectangle(self.img, (x,y), (x+w,y+h),(255,0,0),2)
+
+        if(len(objects) != 0):
+            notifyObservers('on')
+        else:
+            notifyObservers('off')
+
+        return self.img
+
     def addObserver(self, o):
         self.observers[o] = 1
 
     def removeObserver(self, o):
         del self.observers[o]
 
-    def notifyObservers(self, old, new):
+    def notifyObservers(self, value):
         for o in self.observers:
-            o.notify(old, new, self)
+            o.notify(value, self)
 
 if __name__ == "__main__":
     piCam = PiCam()
