@@ -1,6 +1,6 @@
 from os import system
 
-from robotCoke import *
+from robotCoke import robot
 from factory import robocorp
 
 import time
